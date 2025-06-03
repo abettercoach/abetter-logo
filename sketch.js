@@ -2,7 +2,7 @@
 let mainCell;
 
 function setup() {
-  randomSeed(99); //We will use the built-in system random function later.
+  //randomSeed(99); //We will use the built-in system random function later.
 
   //P5 Prams Setup
   createCanvas(400, 400);
@@ -36,17 +36,17 @@ function mouseWheel(event){
 }
 
 // Constants for use in ExplodingCell
-const minCellWidth = 5;
-const minCellHeight = 5;
-const maxCellWidth = 15;
-const maxCellHeight = 15;
+const minCellWidth = 4;
+const minCellHeight = 4;
+const maxCellWidth = 16;
+const maxCellHeight = 16;
 const maxExplodedDistance = 100;
 
 class ExplodingCell {
 
   constructor(x,y,width,height) {
     
-    // Each cell is made up of a size, original position, and quadrants (an array of 4 subcells)
+    // Each cell is made up of a size, original position, and quadrants
     this.size = {
       width: width,
       height: height,
@@ -59,14 +59,25 @@ class ExplodingCell {
     
     this.quadrants = [];
     
-    // Whether this cell becomes a parent cell with quadrants depends on 3 conditions.
+    // Whether we populate the quadrants array and split this cell depends on 3 conditions.
+    let willSplit;
+
     // The first two relate to the size of the cell.
     let isTooBig = this.size.width > maxCellWidth && this.size.height > maxCellHeight; //Bigger than max, always split
-    let isNotTooSmall = this.size.width > minCellWidth && this.size.height > minCellHeight; //Smaller than min, never split
-
-    if (isTooBig || isNotTooSmall) {
+    let isTooSmall = this.size.width < minCellWidth && this.size.height < minCellHeight; //Smaller than min, never split
+    
+    if (isTooBig) {
+      willSplit = true;
+    } else if (isTooSmall) {
+      willSplit = false;
+    } else { 
       // The third condition is randomness. Split 75% of cells that meet our first two criteria.
-      if ( random(0,100) <= 75 ){
+      willSplit = random(0,100) <= 65;
+    }
+
+    // Cells that met all criteria will have four subcells in the quadrants array
+    // Otherwise, the quadrants array will remain empty 
+    if (willSplit) {
         let halfWidth = width/2;
         let halfHeight = height/2;
 
@@ -76,9 +87,7 @@ class ExplodingCell {
         let cellSE = new ExplodingCell(x+halfWidth,y+halfHeight,halfWidth,halfHeight);
 
         this.quadrants = [cellNW, cellNE, cellSW, cellSE]
-        // Cells that met all criteria now have four quadrants or subcells
       }
-    } // Otherwise, the quadrants array will remain empty 
 
     // Each cell will also have an "exploded position" calculated by adding dX and dY to the original position.
     // For most cells this will be the same as the original position, meaning they won't ever appear exploded when drawn.
